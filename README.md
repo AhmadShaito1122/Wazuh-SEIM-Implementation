@@ -1,45 +1,38 @@
-Wazuh SIEM Implementation and Testing 🔍
-Author: Ahmad Shaito
-Technology: Wazuh SIEM + Docker + PowerShell
+# Wazuh SIEM Implementation and Testing Project 🔒
 
-📝 Executive Summary
-This project implements and tests the Wazuh Security Information and Event Management (SIEM) system in a simulated environment. The goal was to evaluate Wazuh's effectiveness in detecting and responding to cyber threats, including brute force attacks, failed logins, and malware. The implementation features real-time monitoring, custom rule configurations, automated responses, and integration with VirusTotal for malware detection.
+**Author**: Ahmad Shaito  
+**Technologies**: Wazuh SIEM, Docker, PowerShell, ELK Stack  
 
-🎯 Introduction
-The project aimed to:
+---
 
-Deploy Wazuh SIEM using container technology.
+## 📝 Executive Summary
+Implemented and tested Wazuh SIEM in a controlled environment to evaluate its threat detection capabilities. The project focused on:
+- Real-time security monitoring
+- Custom rule creation for attack detection
+- Automated response mechanisms
+- Integration with VirusTotal for malware analysis
 
-Configure custom rules for threat detection (e.g., SSH failures, USB device alerts).
+Successfully detected brute force attacks and unauthorized access attempts while identifying areas for improvement in advanced threat detection.
 
-Test Wazuh's detection capabilities against simulated attacks (e.g., Red Atomic tests, EICAR malware file).
+---
 
-Analyze false positives/negatives and suggest improvements.
+## 🛠️ Implementation Highlights
 
-Wazuh's open-source nature and comprehensive features (log analysis, FIM, compliance management) make it ideal for defensive security testing.
+### 🖥️ System Architecture
+```mermaid
+graph TD
+    A[Wazuh Server] -->|Collects Data| B[Wazuh Agents]
+    A --> C[ELK Stack]
+    B --> D[Windows 10 VM]
+    B --> E[Ubuntu VM]
+    A --> F[VirusTotal API]
 
-⚙️ Implementation Details
-a. Setup & Configuration
-Wazuh Server:
-
-Installed on a Kali/Ubuntu VM using Docker.
-
-Integrated with ELK stack for log visualization.
+🔧 Key Configurations
+Server Setup:
 
 bash
 curl -sO https://packages.wazuh.com/4.7/wazuh-install.sh && sudo bash ./wazuh-install.sh --a
-Wazuh Agent:
-
-Deployed on Windows/Ubuntu VMs.
-
-Configured to communicate with the server via IP.
-
-b. Rule Configuration
-Custom Rules:
-
-Example: Block IP 1.1.1.1 after repeated SSH failures (Rule ID 100001).
-
-Active response to block IPs for 10 minutes:
+Active Response Rule:
 
 xml
 <active-response>
@@ -47,98 +40,82 @@ xml
   <rules_id>100001</rules_id>
   <timeout>600</timeout>
 </active-response>
-File Integrity Monitoring (FIM):
-
-Monitored critical directories for unauthorized changes.
-
-Alerts triggered on file modifications.
-
-c. Threat Detection
 VirusTotal Integration:
-
-Scanned files in monitored directories using VirusTotal API.
 
 xml
 <integration>
   <name>virustotal</name>
   <api_key>YOUR_API_KEY</api_key>
+  <group>syscheck</group>
 </integration>
-USB Device Alerts:
+⚔️ Attack Simulations
+Attack Type	Detection	Alert Level	MITRE Tactic
+Failed Login	✅	5	T1078 (Valid Accts)
+Brute Force	✅	10	T1110 (Brute Force)
+Red Atomic Tests	❌	-	-
+EICAR Malware Download	Partial	-	-
 
-Configured rules to detect USB insertions on Windows agents.
+📊 Results Analysis
+pie
+    title Components Breakdown
+    "Wazuh Server" : 40
+    "Agents" : 30
+    "ELK Stack" : 20
+    "Integrations" : 10
 
-🕵️ Attack Scenarios & Results
-1. Simulated Failed Login
-Tool: PowerShell script.
+Key Findings:
 
-Result: Wazuh detected the event (Alert Level 5, MITRE T1078).
+Effective at detecting basic intrusion attempts
 
-powershell
-$credential = New-Object PSCredential("NonExistentUser", (ConvertTo-SecureString "WrongPassword!" -AsPlainText -Force))
-Start-Process "cmd.exe" -Credential $credential
-2. Brute Force Attack
-Tool: PowerShell loop with common credentials.
+Comprehensive log collection and analysis
 
-Result: Wazuh triggered a Level 10 alert (MITRE T1110).
+Needs improvement in:
 
-3. Red Atomic Tests
-Goal: Simulate advanced attacks (e.g., credential dumping).
+Advanced attack pattern recognition
 
-Result: Wazuh did not detect these tests (limitation noted).
+Malware behavior analysis
 
-4. EICAR Malware Test
-Action: Downloaded EICAR test file to a monitored directory.
+Cloud environment monitoring
 
-Result: Detected by FIM but no malware alert (needed deeper integration).
+🏁 Conclusion
+This project demonstrated Wazuh's effectiveness as an open-source SIEM solution while highlighting areas needing additional configuration for enterprise-grade security monitoring. The implementation serves as a foundation for building more sophisticated security monitoring systems.
 
-✅ Conclusion
-Wazuh successfully:
-✔ Detected brute force attacks and failed logins.
-✔ Automated responses (e.g., IP blocking).
-✔ Monitored file integrity and USB devices.
+Lessons Learned:
 
-Limitations:
+Proper rule tuning is critical for threat detection
 
-Missed Red Atomic tests and EICAR file alerts.
+Integration with third-party tools enhances capabilities
 
-Required manual tuning for advanced threat detection.
+Regular testing is essential to maintain detection effectiveness
 
-💡 Recommendations for Future Work
-Enhance Detection:
+📂 Repository Structure
+/wazuh-implementation
+│── /docs
+│   └── Project_Report.docx
+│── /configs
+│   ├── ossec.conf
+│   └── agent.conf
+│── /scripts
+│   ├── brute_force.ps1
+│   └── failed_login.ps1
+└── README.md
+🖥️ Installation Guide
+Server Requirements:
 
-Add rules for Red Atomic test patterns.
+4GB RAM minimum
 
-Improve malware detection (e.g., YARA integration).
+2 CPU cores
 
-Usability:
+20GB disk space
 
-Develop a high-level dashboard for SOC teams.
-
-Implement automated report generation.
-
-Scalability:
-
-Test in cloud environments (AWS/Azure).
-
-🚀 How to Run the Project
-Prerequisites:
-
-Linux VM for Wazuh server.
-
-Windows/Ubuntu VM for agents.
-
-Docker installed.
-
-Deploy Wazuh Server:
+Quick Start:
 
 bash
-curl -sO https://packages.wazuh.com/4.7/wazuh-install.sh && sudo bash ./wazuh-install.sh --a
-Add Agents:
+# Deploy Wazuh server
+wget https://packages.wazuh.com/4.7/wazuh-install.sh
+sudo bash wazuh-install.sh --a
 
-Use the Wazuh dashboard to generate agent installation commands.
-
-Configure Rules:
-
-Modify /var/ossec/etc/ossec.conf for custom rules.
-
-🔗 Full Report: Project_Report.docx
+# Add Windows agent
+Invoke-WebRequest -Uri https://packages.wazuh.com/4.7/wazuh-agent.msi -OutFile wazuh-agent.msi
+msiexec.exe /i wazuh-agent.msi /qn WAZUH_MANAGER='SERVER_IP'
+🔐 Security Note: Always test configurations in a non-production environment before deployment.
